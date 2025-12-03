@@ -17,6 +17,8 @@ short_description: Stores phone numbers saved to names in a database.
 ## Hugging Face Link
 https://huggingface.co/spaces/Endreuz/Phone_Number_Search-Linear_Search
 
+## Github Link
+https://github.com/SirinFrost/Phone_Number_Search-Linear_Search
 
 ## Author & Acknowledgment
 Author: Andrew Zhang  
