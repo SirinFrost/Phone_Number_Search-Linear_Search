@@ -1,0 +1,120 @@
+import gradio as gr
+
+from functions import (
+    search,
+    valid_phone_number,
+    phone_number_error,
+    add,
+    database,
+    remove,
+    save_storage,
+)
+
+
+def phonebook_app(action, name, phone_number):
+    # Normalize inputs
+    action = (action or "").lower().strip()
+    name = (name or "").strip()
+    phone_number = (phone_number or "").strip()
+
+    try:
+        if action == "search":
+            if not name:
+                return "Please enter a name to search."
+            return search(name)
+
+        elif action == "add":
+            if not name or not phone_number:
+                return "Please enter both a name and a phone number."
+            if not valid_phone_number(phone_number):
+                return phone_number_error()
+
+            result = add(name, phone_number)
+            save_storage()
+            return result
+
+        elif action == "remove":
+            if not name:
+                return "Please enter a name to remove."
+            result = remove(name)
+            save_storage()
+            return result
+
+        elif action == "database":
+            return database()
+
+        elif action == "save":
+            save_storage()
+            return "Phonebook saved."
+
+        return "Unknown action."
+
+    except Exception as e:
+        # Basic safety so the UI doesn't crash on unexpected errors.
+        return f"An internal error occurred: {e}"
+
+
+def update_visibility(action):
+    """
+    Controls visibility of name + phone fields.
+    """
+    action = (action or "").lower().strip()
+
+    if action in ["search", "add", "remove"]:
+        # show name and show phone only if adding
+        return (
+            gr.update(visible=True),               # show name
+            gr.update(visible=(action == "add")),  # phone only for Add
+        )
+
+    # For Database / Save and anything else, hide both
+    return (
+        gr.update(visible=False),
+        gr.update(visible=False),
+    )
+
+
+with gr.Blocks(title="Phonebook Manager") as demo:
+    gr.Markdown("## Phonebook Manager")
+
+    action = gr.Radio(
+        ["Search", "Add", "Remove", "Database", "Save"],
+        label="Action",
+        value="Search"
+    )
+
+    name = gr.Textbox(
+        label="Name",
+        placeholder="e.g. Alice",
+        visible=True,
+    )
+
+    phone_number = gr.Textbox(
+        label="Phone number (10 digits)",
+        placeholder="1234567890",
+        visible=False,
+    )
+
+    result = gr.Textbox(
+        label="Result",
+        lines=10
+    )
+
+    # Update visibility when action changes
+    action.change(
+        fn=update_visibility,
+        inputs=action,
+        outputs=[name, phone_number]
+    )
+
+    btn = gr.Button("Run")
+
+    btn.click(
+        fn=phonebook_app,
+        inputs=[action, name, phone_number],
+        outputs=result
+    )
+
+
+if __name__ == "__main__":
+    demo.launch()

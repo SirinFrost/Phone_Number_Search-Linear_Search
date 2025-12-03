@@ -1,0 +1,57 @@
+# functions.py
+import json
+
+FILE_PATH = "phonebook.json"   # change this if your file has a different name
+
+# Load the phonebook from JSON at import time
+try:
+    with open(FILE_PATH, "r") as f:
+        phonebook = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    phonebook = {}  # start with an empty phonebook if file doesn't exist or is invalid
+
+
+def save_storage():
+    """Save the current phonebook dictionary back to the JSON file."""
+    with open(FILE_PATH, "w") as f:
+        json.dump(phonebook, f, indent=4)
+
+
+def valid_phone_number(number: str) -> bool:
+    """Check if the phone number is exactly 10 digits, no dashes."""
+    return number.isdigit() and len(number) == 10
+
+
+def phone_number_error():
+    return "Error: invalid phone number. Please enter 10 digits with no dashes."
+
+
+def search(name: str) -> str:
+    for key in phonebook:
+        if key == name:
+            return f"{key}: {phonebook[key]}"
+    return f"{name} not found in phonebook."
+
+
+def add(name: str, number: str) -> str:
+    """Add or update a contact."""
+    phonebook[name] = number
+    return f"Added/updated {name} with number {number}."
+
+
+def remove(name: str) -> str:
+    """Remove a contact by name."""
+    if name in phonebook:
+        del phonebook[name]
+        return f"Removed {name} from phonebook."
+    else:
+        return f"{name} not found, nothing removed."
+
+
+def database() -> str:
+    """Return the whole phonebook as a formatted string."""
+    if not phonebook:
+        return "Phonebook is empty."
+
+    lines = [f"{name}: {num}" for name, num in phonebook.items()]
+    return "\n".join(lines)
